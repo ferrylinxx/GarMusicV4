@@ -10,7 +10,8 @@ import Link from "next/link";
 import EditTrackModal from "@/components/EditTrackModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
-interface HomeClientProps { allTracks: Track[]; recentTracks: Track[]; }
+interface DbAlbum { id: string; name: string; artist?: string | null; coverUrl?: string | null; tracks: Track[]; }
+interface HomeClientProps { allTracks: Track[]; recentTracks: Track[]; albums: DbAlbum[]; }
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -117,23 +118,25 @@ function ArtistCard({ name, tracks }: { name: string; tracks: Track[] }) {
   );
 }
 
-function AlbumCard({ album, tracks }: { album: string; tracks: Track[] }) {
+function AlbumCard({ album }: { album: DbAlbum }) {
   const { setQueue } = usePlayerStore();
-  const cover = tracks.find(t => t.coverUrl)?.coverUrl;
+  const cover = album.coverUrl ?? album.tracks.find(t => t.coverUrl)?.coverUrl;
   return (
-    <Link href={`/album/${encodeURIComponent(album)}`}
+    <Link href={`/album/${album.id}`}
       className="group flex-shrink-0 w-40 p-3 rounded-xl bg-[#181818] hover:bg-[#282828] transition-colors cursor-pointer">
       <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-3 shadow-xl">
         {cover
-          ? <Image src={cover} alt={album} fill className="object-cover" />
+          ? <Image src={cover} alt={album.name} fill className="object-cover" />
           : <div className="w-full h-full bg-gradient-to-br from-[#333] to-[#1a1a1a] flex items-center justify-center"><Music2 size={28} className="text-white/20" /></div>}
-        <button onClick={e => { e.preventDefault(); setQueue(tracks, 0); }}
-          className="absolute bottom-2 right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/50 transition-all duration-200 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
-          <Play size={16} className="text-black ml-0.5" fill="black" />
-        </button>
+        {album.tracks.length > 0 && (
+          <button onClick={e => { e.preventDefault(); setQueue(album.tracks, 0); }}
+            className="absolute bottom-2 right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/50 transition-all duration-200 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
+            <Play size={16} className="text-black ml-0.5" fill="black" />
+          </button>
+        )}
       </div>
-      <p className="text-sm font-bold text-white truncate">{album}</p>
-      <p className="text-xs text-white/50 truncate mt-0.5">{tracks[0]?.artist}</p>
+      <p className="text-sm font-bold text-white truncate">{album.name}</p>
+      <p className="text-xs text-white/50 truncate mt-0.5">{album.artist ?? album.tracks[0]?.artist ?? "Varios artistas"}</p>
     </Link>
   );
 }
@@ -150,7 +153,7 @@ function Section({ title, href, children }: { title: string; href?: string; chil
   );
 }
 
-export default function HomeClient({ allTracks, recentTracks }: HomeClientProps) {
+export default function HomeClient({ allTracks, recentTracks, albums }: HomeClientProps) {
   const { setQueue } = usePlayerStore();
   const { data: session } = useSession();
   const isAdmin = (session?.user as { role?: string })?.role === "ADMIN";
@@ -164,12 +167,6 @@ export default function HomeClient({ allTracks, recentTracks }: HomeClientProps)
     const map = new Map<string, Track[]>();
     allTracks.forEach(t => { if (!map.has(t.artist)) map.set(t.artist, []); map.get(t.artist)!.push(t); });
     return Array.from(map.entries()).map(([name, tracks]) => ({ name, tracks }));
-  }, [allTracks]);
-
-  const albums = useMemo(() => {
-    const map = new Map<string, Track[]>();
-    allTracks.forEach(t => { if (t.album) { if (!map.has(t.album)) map.set(t.album, []); map.get(t.album)!.push(t); } });
-    return Array.from(map.entries()).map(([album, tracks]) => ({ album, tracks }));
   }, [allTracks]);
 
   const userName = session?.user?.name?.split(" ")[0] ?? null;
@@ -226,8 +223,8 @@ export default function HomeClient({ allTracks, recentTracks }: HomeClientProps)
       )}
 
       {albums.length > 0 && (
-        <Section title="Álbumes">
-          {albums.map(({ album, tracks }) => <AlbumCard key={album} album={album} tracks={tracks} />)}
+        <Section title="Álbumes" href="/albums">
+          {albums.map(album => <AlbumCard key={album.id} album={album} />)}
         </Section>
       )}
 

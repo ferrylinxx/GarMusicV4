@@ -31,6 +31,7 @@ model Track {
   title      String
   artist     String
   album      String?
+  albumId    String?
   duration   Int
   fileUrl    String
   coverUrl   String?
@@ -42,11 +43,27 @@ model Track {
   updatedAt  DateTime @updatedAt
 
   uploader       User            @relation(fields: [uploadedBy], references: [id])
+  albumRef       Album?          @relation(fields: [albumId], references: [id], onDelete: SetNull)
   playlistTracks PlaylistTrack[]
   likedBy        LikedTrack[]
   listenHistory  ListenHistory[]
 
   @@map("tracks")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  name        String
+  artist      String?
+  description String?
+  coverUrl    String?
+  year        Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tracks Track[]
+
+  @@map("albums")
 }
 
 model Playlist {

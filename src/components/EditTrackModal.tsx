@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Track } from "@/store/player";
-import { X, Loader2, Save, ImageIcon, Trash2, Music2 } from "lucide-react";
+import { X, Loader2, Save, ImageIcon, Trash2, Music2, Disc3 } from "lucide-react";
 import Image from "next/image";
+
+interface AlbumOption { id: string; name: string; artist?: string; }
 
 interface Props {
   track: Track;
@@ -33,6 +35,13 @@ export default function EditTrackModal({ track, onClose, onSaved }: Props) {
   const [removeCover,  setRemoveCover]  = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState("");
+  const [albums,       setAlbums]       = useState<AlbumOption[]>([]);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string>("");
+
+  // Load existing albums for the dropdown
+  useEffect(() => {
+    fetch("/api/albums").then(r => r.json()).then((data: AlbumOption[]) => setAlbums(data)).catch(() => {});
+  }, []);
 
   // Cerrar con Escape
   useEffect(() => {
@@ -73,9 +82,19 @@ export default function EditTrackModal({ track, onClose, onSaved }: Props) {
 
     const res  = await fetch(`/api/tracks/${track.id}`, { method: "PATCH", body: fd });
     const data = await res.json();
-    setLoading(false);
 
-    if (!res.ok) { setError(data.error ?? "Error al guardar"); return; }
+    if (!res.ok) { setLoading(false); setError(data.error ?? "Error al guardar"); return; }
+
+    // If an album was selected, assign the track to it
+    if (selectedAlbumId) {
+      await fetch(`/api/albums/${selectedAlbumId}/tracks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId: track.id }),
+      });
+    }
+
+    setLoading(false);
     onSaved(data.track as Track);
     onClose();
   };
@@ -148,6 +167,31 @@ export default function EditTrackModal({ track, onClose, onSaved }: Props) {
                 />
               </div>
             ))}
+
+            {/* Album selector from DB */}
+            {albums.length > 0 && (
+              <div className="col-span-2">
+                <label className="block text-white/50 text-[11px] font-semibold uppercase tracking-wider mb-1.5">
+                  <Disc3 size={10} className="inline mr-1" />Asignar a álbum
+                </label>
+                <select
+                  value={selectedAlbumId}
+                  onChange={e => {
+                    setSelectedAlbumId(e.target.value);
+                    const chosen = albums.find(a => a.id === e.target.value);
+                    if (chosen) setForm(f => ({ ...f, album: chosen.name }));
+                    else setForm(f => ({ ...f, album: "" }));
+                  }}
+                  className="w-full bg-white/5 text-white px-3.5 py-2.5 rounded-xl border border-white/10 focus:border-green-500/50 focus:outline-none text-sm transition-all"
+                >
+                  <option value="" className="bg-[#282828]">Sin álbum asignado</option>
+                  {albums.map(a => (
+                    <option key={a.id} value={a.id} className="bg-[#282828]">{a.name}{a.artist ? ` — ${a.artist}` : ""}</option>
+                  ))}
+                </select>
+                <p className="text-white/30 text-[10px] mt-1">Seleccionar asignará la canción al álbum en la biblioteca</p>
+              </div>
+            )}
           </div>
 
           {error && (
