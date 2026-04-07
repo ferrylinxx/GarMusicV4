@@ -11,7 +11,7 @@ export async function GET() {
   const [user, likedCount, listenCount, playlists, topTracks] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
+      select: { id: true, name: true, email: true, image: true, bio: true, role: true, createdAt: true },
     }),
     prisma.likedTrack.count({ where: { userId } }),
     prisma.listenHistory.count({ where: { userId } }),
@@ -33,7 +33,7 @@ export async function GET() {
   const topTrackIds = topTracks.map((t: { trackId: string }) => t.trackId);
   const topTrackDetails = await prisma.track.findMany({
     where: { id: { in: topTrackIds } },
-    select: { id: true, title: true, artist: true, coverUrl: true, duration: true, plays: true },
+    select: { id: true, title: true, artist: true, coverUrl: true, fileUrl: true, duration: true, plays: true },
   });
 
   // Ordenar por plays descendiente

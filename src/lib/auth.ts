@@ -47,13 +47,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const userId = (token.id ?? token.sub) as string | undefined;
       if (!token.id && userId) token.id = userId;
 
-      // Siempre re-lee role desde BD para que cambios se apliquen sin re-login
+      // Siempre re-lee datos desde BD para que cambios de perfil se reflejen sin re-login
       if (userId) {
         const dbUser = await prisma.user.findUnique({
           where: { id: userId },
-          select: { role: true },
+          select: { role: true, name: true, image: true },
         });
-        if (dbUser) token.role = dbUser.role;
+        if (dbUser) {
+          token.role  = dbUser.role;
+          token.name  = dbUser.name;
+          token.picture = dbUser.image; // NextAuth mapea picture → session.user.image
+        }
       }
       return token;
     },

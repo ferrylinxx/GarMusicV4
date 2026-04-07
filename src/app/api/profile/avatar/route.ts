@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
-import { existsSync } from "fs";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -17,7 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No se recibió imagen" }, { status: 400 });
     }
 
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    // Permitir JPEG con ambos tipos MIME posibles (jpeg / jpg)
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
     if (!allowed.includes(file.type)) {
       return NextResponse.json({ error: "Formato no permitido. Usa JPG, PNG, WEBP o GIF" }, { status: 400 });
     }
@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "La imagen no puede superar 5 MB" }, { status: 400 });
     }
 
+    // Crear directorio si no existe (mkdir con recursive es idempotente)
     const avatarsDir = join(process.cwd(), "public", "avatars");
-    if (!existsSync(avatarsDir)) await mkdir(avatarsDir, { recursive: true });
+    await mkdir(avatarsDir, { recursive: true });
 
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     const fileName = `avatar_${session.user.id}_${Date.now()}.${ext}`;

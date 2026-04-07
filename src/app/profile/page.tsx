@@ -89,10 +89,10 @@ export default function ProfilePage() {
       <div className="bg-gradient-to-b from-green-900/40 to-transparent px-6 pt-10 pb-6">
         <div className="flex items-end gap-5">
           <div className="relative group flex-shrink-0">
-            <div className="w-28 h-28 rounded-full overflow-hidden shadow-2xl">
+            <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-2xl">
               {data?.user.image
-                ? <Image src={data.user.image} alt="Avatar" width={112} height={112} className="object-cover w-full h-full" />
-                : <div className="w-28 h-28 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-4xl font-black text-black">{initials}</div>}
+                ? <Image src={data.user.image} alt="Avatar" fill className="object-cover" unoptimized />
+                : <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-4xl font-black text-black">{initials}</div>}
             </div>
             <button onClick={() => avatarRef.current?.click()}
               className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
