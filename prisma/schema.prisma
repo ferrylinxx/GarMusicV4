@@ -20,6 +20,7 @@ model User {
   playlists      Playlist[]
   likedTracks    LikedTrack[]
   uploadedTracks Track[]
+  listenHistory  ListenHistory[]
 
   @@map("users")
 }
@@ -42,6 +43,7 @@ model Track {
   uploader       User            @relation(fields: [uploadedBy], references: [id])
   playlistTracks PlaylistTrack[]
   likedBy        LikedTrack[]
+  listenHistory  ListenHistory[]
 
   @@map("tracks")
 }
@@ -86,6 +88,19 @@ model LikedTrack {
 
   @@unique([userId, trackId])
   @@map("liked_tracks")
+}
+
+model ListenHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  trackId    String
+  listenedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@index([userId, listenedAt])
+  @@map("listen_history")
 }
 
 enum Role {

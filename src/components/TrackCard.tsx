@@ -1,8 +1,11 @@
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import { usePlayerStore, Track } from "@/store/player";
-import { Play, Pause, Music2, Heart, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
+import { Play, Pause, Music2, Heart, Pencil, Trash2, MoreHorizontal, ListPlus, Download, User, Disc3 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
@@ -26,8 +29,20 @@ export default function TrackCard({
   onLike, isLiked = false,
   isAdmin = false, onEdit, onDelete,
 }: TrackCardProps) {
-  const { currentTrack, isPlaying, setQueue, setTrack, togglePlay } = usePlayerStore();
+  const { currentTrack, isPlaying, setQueue, setTrack, togglePlay, addToQueue } = usePlayerStore();
+  const { success } = useToast();
   const active = currentTrack?.id === track.id;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const handlePlay = () => {
     if (active) togglePlay();
@@ -79,7 +94,7 @@ export default function TrackCard({
         {track.album ?? "—"}
       </p>
 
-      {/* Acciones (visibles en hover) */}
+      {/* Acciones hover */}
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
         {onLike && (
           <button onClick={(e) => { e.stopPropagation(); onLike(track.id); }}
@@ -88,23 +103,55 @@ export default function TrackCard({
           </button>
         )}
         {isAdmin && onEdit && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit(track); }}
-            title="Editar canción"
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/8 text-white/40 hover:text-white transition-all hover:scale-110"
-          >
+          <button onClick={(e) => { e.stopPropagation(); onEdit(track); }} title="Editar"
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/8 text-white/40 hover:text-white transition-all hover:scale-110">
             <Pencil size={13} />
           </button>
         )}
         {isAdmin && onDelete && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(track); }}
-            title="Eliminar canción"
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/15 text-white/40 hover:text-red-400 transition-all hover:scale-110"
-          >
+          <button onClick={(e) => { e.stopPropagation(); onDelete(track); }} title="Eliminar"
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/15 text-white/40 hover:text-red-400 transition-all hover:scale-110">
             <Trash2 size={13} />
           </button>
         )}
+
+        {/* Context menu (...) */}
+        <div className="relative" ref={menuRef}>
+          <button onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/8 text-white/40 hover:text-white transition-all">
+            <MoreHorizontal size={14} />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 bottom-full mb-1 w-52 bg-[#282828] rounded-xl shadow-2xl z-50 py-1 border border-white/10 overflow-hidden">
+              <button onClick={(e) => { e.stopPropagation(); addToQueue(track); setMenuOpen(false); success(`"${track.title}" añadida a la cola`); }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/8 hover:text-white transition-colors">
+                <ListPlus size={15} /> Añadir a la cola
+              </button>
+              {onLike && (
+                <button onClick={(e) => { e.stopPropagation(); onLike(track.id); setMenuOpen(false); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/8 hover:text-white transition-colors">
+                  <Heart size={15} className={isLiked ? "fill-green-500 text-green-500" : ""} />
+                  {isLiked ? "Quitar de favoritos" : "Añadir a favoritos"}
+                </button>
+              )}
+              <a href={track.fileUrl} download onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/8 hover:text-white transition-colors">
+                <Download size={15} /> Descargar
+              </a>
+              <div className="border-t border-white/5 my-1" />
+              <Link href={`/artist/${encodeURIComponent(track.artist)}`} onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/8 hover:text-white transition-colors">
+                <User size={15} /> Ver artista
+              </Link>
+              {track.album && (
+                <Link href={`/album/${encodeURIComponent(track.album)}`} onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/8 hover:text-white transition-colors">
+                  <Disc3 size={15} /> Ver álbum
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Duración */}

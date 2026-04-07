@@ -2,8 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { Upload, Music2, Image as ImageIcon, CheckCircle, Loader2, X, Shield, Lock } from "lucide-react";
+import { Upload, Music2, Image as ImageIcon, CheckCircle, Loader2, X, Shield, Lock, Layers } from "lucide-react";
 import Image from "next/image";
+import BulkUpload from "@/components/BulkUpload";
 
 const FIELDS = [
   { id: "title",  label: "Título",   placeholder: "Nombre de la canción", required: true },
@@ -78,6 +79,8 @@ export default function UploadPage() {
     </div>
   );
 
+  const [tab, setTab] = useState<"single" | "bulk">("single");
+
   return (
     <div className="p-6 max-w-2xl mx-auto animate-fade-in">
       <div className="flex items-center gap-3 mb-2">
@@ -87,7 +90,22 @@ export default function UploadPage() {
         <span className="text-green-400 text-xs font-bold uppercase tracking-widest">Panel de administrador</span>
       </div>
       <h1 className="text-3xl font-black text-white mb-1 tracking-tight">Subir música</h1>
-      <p className="text-white/40 text-sm mb-8">Formatos soportados: MP3, FLAC, WAV, OGG</p>
+      <p className="text-white/40 text-sm mb-6">Formatos soportados: MP3, FLAC, WAV, OGG</p>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-white/5 p-1 rounded-xl mb-6">
+        <button onClick={() => setTab("single")} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all
+          ${tab === "single" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+          <Upload size={14} /> Una canción
+        </button>
+        <button onClick={() => setTab("bulk")} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all
+          ${tab === "bulk" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}>
+          <Layers size={14} /> Subida masiva
+        </button>
+      </div>
+
+      {tab === "bulk" && <BulkUpload />}
+      {tab === "single" && <>
 
       {success && (
         <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-xl mb-6">
@@ -166,6 +184,7 @@ export default function UploadPage() {
           {loading ? <><Loader2 size={16} className="animate-spin" /> Subiendo...</> : <><Upload size={16} /> Subir canción</>}
         </button>
       </form>
+      </>}
     </div>
   );
 }

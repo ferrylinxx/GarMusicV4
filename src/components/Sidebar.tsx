@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Library, Upload, Music2, LogOut, Shield, ChevronLeft, ChevronRight, LayoutDashboard } from "lucide-react";
+import { Home, Search, Library, Upload, Music2, LogOut, Shield, ChevronLeft, ChevronRight, LayoutDashboard, Clock, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
 export default function Sidebar() {
@@ -16,6 +16,8 @@ export default function Sidebar() {
     { href: "/", label: "Inicio", icon: Home },
     { href: "/search", label: "Buscar", icon: Search },
     { href: "/library", label: "Tu Biblioteca", icon: Library },
+    { href: "/history", label: "Historial", icon: Clock },
+    { href: "/profile", label: "Mi Perfil", icon: User },
     ...(isAdmin ? [
       { href: "/upload", label: "Subir Música", icon: Upload },
       { href: "/admin",  label: "Panel Admin",  icon: LayoutDashboard },

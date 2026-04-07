@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Library, LayoutDashboard, Upload } from "lucide-react";
+import { Home, Search, Library, Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function BottomNav() {
@@ -14,10 +14,8 @@ export default function BottomNav() {
     { href: "/",        label: "Inicio",    icon: Home },
     { href: "/search",  label: "Buscar",    icon: Search },
     { href: "/library", label: "Biblioteca",icon: Library },
-    ...(isAdmin ? [
-      { href: "/upload", label: "Subir",  icon: Upload },
-      { href: "/admin",  label: "Admin",  icon: LayoutDashboard },
-    ] : []),
+    { href: "/history", label: "Historial", icon: Clock },
+    { href: "/profile", label: "Perfil",    icon: User },
   ];
 
   // Ocultar en páginas de login/register
