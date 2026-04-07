@@ -1,5 +1,84 @@
 @import "tailwindcss";
 
+* { box-sizing: border-box; }
+
+body {
+  background-color: #121212;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Safe area para móviles con notch */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3e3e3e; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #535353; }
+
+/* ── Range slider ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: height 0.1s;
+}
+input[type="range"]:hover { height: 5px; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+input[type="range"]:hover::-webkit-slider-thumb { opacity: 1; }
+
+/* ── Animaciones ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-bar {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1); }
+}
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* ── Glassmorphism card ── */
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #1db954, #1ed760);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Now playing bars ── */
+.playing-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  background: #1db954;
+  animation: pulse-bar 0.8s ease-in-out infinite;
+}
+.playing-bar:nth-child(2) { animation-delay: 0.15s; }
+.playing-bar:nth-child(3) { animation-delay: 0.3s; }
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
