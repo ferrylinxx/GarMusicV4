@@ -4,30 +4,30 @@ import DbSetupBanner from "./DbSetupBanner";
 
 async function fetchTracks() {
   try {
-    const [recentTracks, topTracks] = await Promise.all([
+    const [allTracks, recentTracks] = await Promise.all([
+      // Todas las canciones — para derivar top, artistas, álbumes
+      prisma.track.findMany({
+        orderBy: { plays: "desc" },
+        take: 50,
+      }),
+      // Las más recientes — para la sección "Añadidas recientemente"
       prisma.track.findMany({
         orderBy: { createdAt: "desc" },
         take: 20,
-        include: { uploader: { select: { name: true } } },
-      }),
-      prisma.track.findMany({
-        orderBy: { plays: "desc" },
-        take: 10,
-        include: { uploader: { select: { name: true } } },
       }),
     ]);
-    return { recentTracks, topTracks, dbReady: true };
+    return { allTracks, recentTracks, dbReady: true };
   } catch {
-    return { recentTracks: [], topTracks: [], dbReady: false };
+    return { allTracks: [], recentTracks: [], dbReady: false };
   }
 }
 
 export default async function HomePage() {
-  const { recentTracks, topTracks, dbReady } = await fetchTracks();
+  const { allTracks, recentTracks, dbReady } = await fetchTracks();
 
   if (!dbReady) {
     return <DbSetupBanner />;
   }
 
-  return <HomeClient recentTracks={recentTracks} topTracks={topTracks} />;
+  return <HomeClient allTracks={allTracks} recentTracks={recentTracks} />;
 }

@@ -21,11 +21,15 @@ body {
 }
 .animate-slide-in { animation: slide-in 0.25s ease-out; }
 
-/* ── Scrollbar ── */
+/* ── Scrollbar vertical ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #3e3e3e; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #535353; }
+
+/* ── Ocultar scrollbar horizontal (secciones) ── */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 
 /* ── Range slider ── */
 input[type="range"] {
